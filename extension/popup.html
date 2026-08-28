@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Furniture Lead Scraper</title>
+<style>
+  body { font-family: system-ui, sans-serif; width: 300px; padding: 12px; }
+  h3 { margin: 0 0 4px; }
+  p { font-size: 12px; color: #666; margin: 4px 0 10px; }
+  label { display: block; font-size: 12px; margin-top: 8px; }
+  input { width: 100%; box-sizing: border-box; padding: 4px; margin-top: 2px; }
+  button { width: 100%; padding: 8px; margin-top: 10px; cursor: pointer; }
+  button:disabled { cursor: not-allowed; opacity: 0.6; }
+  #status { margin-top: 10px; font-size: 12px; color: #333; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+  <h3>Furniture Lead Scraper</h3>
+  <p>Open a Google Maps search first (e.g. "Furniture Store in Phoenix, AZ"), then run these steps in order.</p>
+
+  <label>Max results
+    <input type="number" id="maxResults" value="30" min="1" max="120">
+  </label>
+
+  <button id="scrapeBtn">1. Scrape this Maps search</button>
+  <button id="enrichBtn" disabled>2. Enrich websites</button>
+  <button id="exportBtn" disabled>3. Export CSV</button>
+
+  <div id="status"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

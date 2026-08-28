@@ -10,6 +10,18 @@ Output columns match the requested order:
 Email | Owner/Founder/CEO Name | Company Name | Website | Pinterest Link | Phone Number
 ```
 
+Two ways to run it — pick one:
+
+- **Python CLI** (below) — runs from a terminal, exports straight to `.xlsx`.
+- **Chrome extension** ([`extension/`](extension/README.md)) — load it via
+  `chrome://extensions` Developer mode → "Load unpacked", then scrape
+  whatever Google Maps search you have open from a popup, no terminal
+  needed. Exports CSV (open in Excel and save as `.xlsx` if you need that
+  format).
+
+Both use the same approach: scrape Maps listings, then check each
+company's own website for a published owner name/email/Pinterest link.
+
 ## Important: what this can and can't get you
 
 - **Company name, address, category, phone, website** come straight off the
