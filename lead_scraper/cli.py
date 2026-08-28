@@ -4,6 +4,10 @@ Examples:
     python -m lead_scraper.cli --out leads.xlsx
     python -m lead_scraper.cli --city "Austin, TX" --category "Office Furniture" --out austin.xlsx
     python -m lead_scraper.cli --headed --max-per-query 20   # debug a CAPTCHA / selector issue
+    python -m lead_scraper.cli --pause 5                     # slower, gentler on Google Maps
+
+Run `python -m lead_scraper.check_setup` first to confirm your environment
+(Python version, dependencies, Playwright's Chromium browser) is ready.
 """
 
 from __future__ import annotations
@@ -22,12 +26,20 @@ def main() -> None:
     parser.add_argument("--max-per-query", type=int, default=60, help="Max Maps listings to pull per city/category query.")
     parser.add_argument("--out", default="leads.xlsx", help="Output .xlsx path.")
     parser.add_argument("--headed", action="store_true", help="Run the browser with a visible window (useful for debugging/CAPTCHAs).")
+    parser.add_argument("--pause", type=float, default=3.0, help="Seconds to wait between Maps search queries (rate limiting). Default: 3.")
     args = parser.parse_args()
 
     queries = build_queries(cities=args.city, categories=args.category)
-    print(f"Running {len(queries)} search queries...")
+    print(f"Running {len(queries)} search queries, {args.pause}s apart...")
 
-    leads = list(run_pipeline(queries, max_results_per_query=args.max_per_query, headless=not args.headed))
+    leads = list(
+        run_pipeline(
+            queries,
+            max_results_per_query=args.max_per_query,
+            headless=not args.headed,
+            inter_query_pause_seconds=args.pause,
+        )
+    )
     export_xlsx(leads, args.out)
     print(f"Saved {len(leads)} deduped leads to {args.out}")
 

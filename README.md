@@ -39,6 +39,17 @@ pip install -r requirements.txt
 playwright install chromium
 ```
 
+## Check your setup first
+
+```bash
+python -m lead_scraper.check_setup
+```
+
+Verifies your Python version, that all dependencies import correctly, and
+that Playwright's Chromium browser is actually installed and launches —
+catches the two most common "why did this return nothing" causes before
+you burn a real run on them.
+
 ## Usage
 
 ```bash
@@ -50,6 +61,9 @@ python -m lead_scraper.cli --city "Austin, TX" --category "Office Furniture" --o
 
 # Run with a visible browser window (useful if Maps shows a CAPTCHA)
 python -m lead_scraper.cli --headed --max-per-query 20
+
+# Slower and gentler on Google Maps (default is 3s between queries)
+python -m lead_scraper.cli --pause 6
 ```
 
 Default search targets (edit `lead_scraper/config.py` to change them):

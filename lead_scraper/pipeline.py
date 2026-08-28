@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 from typing import Iterable, Iterator
 from urllib.parse import urlparse
@@ -27,12 +28,24 @@ def _domain(website: str) -> str:
     return netloc.lower().removeprefix("www.")
 
 
-def run_pipeline(queries: Iterable[str], max_results_per_query: int = 60, headless: bool = True) -> Iterator[Lead]:
-    """Run Maps searches for each query, dedupe by domain/phone, then enrich each site."""
+def run_pipeline(
+    queries: Iterable[str],
+    max_results_per_query: int = 60,
+    headless: bool = True,
+    inter_query_pause_seconds: float = 0.0,
+) -> Iterator[Lead]:
+    """Run Maps searches for each query, dedupe by domain/phone, then enrich each site.
+
+    `inter_query_pause_seconds` waits between queries (not between results within
+    one query) to keep request bursts against Google Maps modest.
+    """
     seen_domains: set[str] = set()
     seen_phones: set[str] = set()
 
-    for query in queries:
+    for query_index, query in enumerate(queries):
+        if query_index > 0 and inter_query_pause_seconds > 0:
+            time.sleep(inter_query_pause_seconds)
+
         for listing in search_listings(query, max_results=max_results_per_query, headless=headless):
             domain = _domain(listing.website)
             if not domain and not listing.phone:
