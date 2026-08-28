@@ -4,29 +4,63 @@
 <meta charset="utf-8">
 <title>Furniture Lead Scraper</title>
 <style>
-  body { font-family: system-ui, sans-serif; width: 300px; padding: 12px; }
-  h3 { margin: 0 0 4px; }
+  body { font-family: system-ui, sans-serif; width: 320px; padding: 12px; }
+  h3 { margin: 14px 0 4px; }
+  h3:first-child { margin-top: 0; }
   p { font-size: 12px; color: #666; margin: 4px 0 10px; }
   label { display: block; font-size: 12px; margin-top: 8px; }
-  input { width: 100%; box-sizing: border-box; padding: 4px; margin-top: 2px; }
-  button { width: 100%; padding: 8px; margin-top: 10px; cursor: pointer; }
+  input[type="number"], input[type="text"] { width: 100%; box-sizing: border-box; padding: 4px; margin-top: 2px; }
+  input[type="file"] { margin-top: 2px; font-size: 12px; }
+  button { width: 100%; padding: 8px; margin-top: 8px; cursor: pointer; }
   button:disabled { cursor: not-allowed; opacity: 0.6; }
-  #status { margin-top: 10px; font-size: 12px; color: #333; white-space: pre-wrap; }
+  hr { margin: 14px 0; border: none; border-top: 1px solid #ddd; }
+  .status { margin-top: 8px; font-size: 12px; color: #333; white-space: pre-wrap; }
+  .hint { font-size: 11px; color: #888; margin: 2px 0 0; }
+  details { margin-top: 10px; }
+  summary { font-size: 12px; cursor: pointer; color: #444; }
 </style>
 </head>
 <body>
-  <h3>Furniture Lead Scraper</h3>
-  <p>Open a Google Maps search first (e.g. "Furniture Store in Phoenix, AZ"), then run these steps in order.</p>
+  <h3>Step 1 — Scrape Maps</h3>
+  <p>Open a Google Maps search first (e.g. "Furniture Store in Phoenix, AZ"), then run these in order.</p>
 
   <label>Max results
     <input type="number" id="maxResults" value="30" min="1" max="120">
   </label>
 
-  <button id="scrapeBtn">1. Scrape this Maps search</button>
-  <button id="enrichBtn" disabled>2. Enrich websites</button>
-  <button id="exportBtn" disabled>3. Export CSV</button>
+  <button id="scrapeBtn">Scrape this Maps search</button>
+  <button id="exportBasicBtn" disabled>Export Website + Company CSV</button>
+  <div id="status" class="status"></div>
 
-  <div id="status"></div>
+  <details>
+    <summary>Advanced: enrich directly from each company's own site</summary>
+    <button id="enrichBtn" disabled>Enrich websites (email/owner/Pinterest)</button>
+    <button id="exportFullBtn" disabled>Export full CSV</button>
+  </details>
+
+  <hr>
+
+  <h3>Step 2 — Find emails via Google Search</h3>
+  <p>Reupload the CSV from Step 1 (needs "Website" and "Company Name" columns), then search Google for each row.</p>
+
+  <label>Reupload CSV
+    <input type="file" id="csvInput" accept=".csv">
+  </label>
+  <div id="loadStatus" class="status"></div>
+
+  <label>Search query template
+    <input type="text" id="queryTemplate" value="{company} {domain} owner email contact">
+  </label>
+  <p class="hint">Use <code>{domain}</code> and <code>{company}</code> as placeholders — type your own query here.</p>
+
+  <label>Pages to visit per search
+    <input type="number" id="resultsToVisit" value="3" min="1" max="5">
+  </label>
+
+  <button id="searchBtn" disabled>Run Google Search + Visit Pages</button>
+  <div id="searchStatus" class="status"></div>
+  <button id="exportSearchBtn" disabled>Export Final CSV</button>
+
   <script src="popup.js"></script>
 </body>
 </html>

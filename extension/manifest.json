@@ -3,7 +3,7 @@
   "name": "Furniture Lead Scraper (Google Maps)",
   "version": "1.0.0",
   "description": "Scrapes the Google Maps search you're already viewing, then checks each company's own site for a published owner name, email, and Pinterest link. No paid APIs.",
-  "permissions": ["activeTab", "downloads"],
+  "permissions": ["activeTab", "downloads", "tabs"],
   "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html"
@@ -12,6 +12,11 @@
     {
       "matches": ["https://www.google.com/maps/*"],
       "js": ["content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.google.com/search*"],
+      "js": ["search_content.js"],
       "run_at": "document_idle"
     }
   ],
