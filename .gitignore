@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+*.egg-info/
+.pytest_cache/
+leads_domain_company.csv
+leads_final.xlsx
+leads_full.xlsx
