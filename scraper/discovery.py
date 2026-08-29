@@ -21,11 +21,13 @@ from scraper.browser import BrowserManager
 MAPS_SEARCH_URL = "https://www.google.com/maps/search/{query}"
 FEED_SELECTOR = 'div[role="feed"]'
 CARD_SELECTOR = f'{FEED_SELECTOR} div[role="article"]'
+CARD_NAME_LINK_SELECTOR = "a.hfpxzc[aria-label]"  # the card's own name/link, before opening the detail panel
 NAME_SELECTORS = ['h1.DUwDvf', 'h1[class*="fontHeadline"]', '[role="main"] h1']
 WEBSITE_SELECTOR = 'a[data-item-id="authority"]'
 PHONE_SELECTOR = 'button[data-item-id^="phone:tel:"]'
 ADDRESS_SELECTOR = 'button[data-item-id="address"]'
 CATEGORY_SELECTOR = 'button[jsaction*="category"]'
+DETAIL_PANEL_TIMEOUT_MS = 8000
 
 
 @dataclass
@@ -100,13 +102,25 @@ def _extract_open_detail_panel(page: Page, fallback_name: str) -> RawBusiness | 
     )
 
 
+def _card_fallback_name(card) -> str:
+    """The card's own aria-label is usually empty; the business name
+    actually lives on a nested link (e.g. `a.hfpxzc[aria-label]`)."""
+    direct = (card.get_attribute("aria-label") or "").strip()
+    if direct:
+        return direct
+    name_link = card.query_selector(CARD_NAME_LINK_SELECTOR)
+    if name_link:
+        return (name_link.get_attribute("aria-label") or "").strip()
+    return ""
+
+
 def discover_businesses(
     browser: BrowserManager,
     keyword: str,
     location: str,
     max_results: int,
     logger: logging.Logger,
-    detail_pause_ms: int = 1200,
+    settle_pause_ms: int = 400,
 ) -> tuple[list[RawBusiness], DiscoveryDiagnostics]:
     """Search Google Maps for `keyword` in `location`; return raw listings
     plus diagnostics. Opens and closes its own page."""
@@ -123,9 +137,17 @@ def discover_businesses(
         listings: list[RawBusiness] = []
         for card in cards:
             try:
-                fallback_name = (card.get_attribute("aria-label") or "").strip()
+                fallback_name = _card_fallback_name(card)
                 card.click()
-                page.wait_for_timeout(detail_pause_ms)
+                try:
+                    # The detail panel swaps through a few transient headings
+                    # before the real business name renders -- wait for it
+                    # rather than guessing a fixed delay (which loses the race
+                    # on a slower connection/machine).
+                    page.wait_for_selector(", ".join(NAME_SELECTORS), timeout=DETAIL_PANEL_TIMEOUT_MS)
+                except Exception:
+                    pass  # fall through to fallback_name if it never renders
+                page.wait_for_timeout(settle_pause_ms)  # let website/phone/address populate too
                 listing = _extract_open_detail_panel(page, fallback_name)
                 if listing:
                     listings.append(listing)
