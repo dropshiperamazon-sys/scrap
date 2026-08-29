@@ -18,3 +18,18 @@ def test_looks_blocked_ignores_long_results_page_that_merely_mentions_the_word()
 
 def test_looks_blocked_false_for_normal_short_text():
     assert _looks_blocked("Example Furniture - Contact us at info@example.com") is False
+
+
+def test_looks_blocked_ignores_short_page_with_only_the_standard_recaptcha_footer():
+    # Real bug found via live testing: Google's results pages carry a
+    # standard "protected by reCAPTCHA" disclaimer on essentially every
+    # search now, blocked or not. A business with sparse search results
+    # produces a short page where that boilerplate footer is most of the
+    # text -- this must NOT be treated as a block.
+    text = (
+        "Bob's Discount Furniture and Mattress Store - no results found.\n"
+        "This site is protected by reCAPTCHA and the Google Privacy Policy "
+        "and Terms of Service apply."
+    )
+    assert len(text) < 1500
+    assert _looks_blocked(text) is False

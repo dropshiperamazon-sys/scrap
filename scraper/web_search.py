@@ -18,22 +18,24 @@ from playwright.sync_api import Page
 from scraper.validation import extract_emails, extract_pinterest_links
 
 GOOGLE_SEARCH_URL = "https://www.google.com/search?q={query}"
+
+# NOTE: plain "captcha"/"recaptcha" are deliberately NOT here -- Google's
+# results pages carry a standard "This site is protected by reCAPTCHA"
+# footer disclaimer on essentially every normal search now, blocked or
+# not, so matching those words alone is a guaranteed false positive. Only
+# phrasing that is distinctive to Google's actual block/interstitial page
+# belongs in this list.
 _BLOCK_INDICATORS = (
-    "unusual traffic",
-    "captcha",
-    "recaptcha",
-    "verify you are a human",
-    "detected unusual traffic",
-    "our systems have detected",
+    "unusual traffic from your computer network",
+    "our systems have detected unusual traffic",
+    "sending automated queries",
+    "verify you're not a robot",
 )
 
-
-# A genuine Google interstitial (CAPTCHA / "unusual traffic") replaces the
-# entire results page with just that notice, so its visible text is short.
-# A normal results page can be thousands of characters and may legitimately
-# quote one of these phrases in a single snippet (e.g. a cached snippet of
-# a site's own bot-check page) without Google having blocked anything --
-# checking length alongside the phrase avoids treating that as a block.
+# A genuine Google interstitial replaces the entire results page with just
+# that notice, so its visible text is short. A normal results page can be
+# thousands of characters; checking length alongside the phrase avoids
+# treating an incidental mention as a block.
 _BLOCK_PAGE_MAX_CHARS = 1500
 
 
@@ -59,6 +61,12 @@ def run_search(page: Page, query: str, logger: logging.Logger, pause_ms: int = 1
     except Exception as exc:
         logger.warning(f"Search request failed for {query!r}: {exc}")
         return "", False
+
+    # Google redirects to a distinct /sorry/ URL when it genuinely blocks a
+    # request -- this is the most reliable signal, independent of page text.
+    if "/sorry/" in page.url:
+        logger.warning(f"Search blocked (Google's /sorry/ interstitial) for {query!r}; skipping this search.")
+        return "", True
 
     text = _visible_text(page)
     if _looks_blocked(text):
