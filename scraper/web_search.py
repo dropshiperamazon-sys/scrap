@@ -28,7 +28,18 @@ _BLOCK_INDICATORS = (
 )
 
 
+# A genuine Google interstitial (CAPTCHA / "unusual traffic") replaces the
+# entire results page with just that notice, so its visible text is short.
+# A normal results page can be thousands of characters and may legitimately
+# quote one of these phrases in a single snippet (e.g. a cached snippet of
+# a site's own bot-check page) without Google having blocked anything --
+# checking length alongside the phrase avoids treating that as a block.
+_BLOCK_PAGE_MAX_CHARS = 1500
+
+
 def _looks_blocked(text: str) -> bool:
+    if len(text) > _BLOCK_PAGE_MAX_CHARS:
+        return False
     lowered = text.lower()
     return any(indicator in lowered for indicator in _BLOCK_INDICATORS)
 
