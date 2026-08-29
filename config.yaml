@@ -1,0 +1,35 @@
+# Universal Business Lead Scraper -- configuration.
+# Change keywords/locations/batch_size/delay/headless here; no Python
+# code changes are ever required.
+
+keywords:
+  - furniture store
+
+locations:
+  - Chicago, IL
+
+# Process leads in batches of this size, then wait before the next batch.
+batch_size: 5
+
+# Random delay (seconds) between completed batches. Exists for reasonable
+# pacing/resource management only -- never as a CAPTCHA/rate-limit bypass.
+min_delay_seconds: 120
+max_delay_seconds: 300
+
+# Skip businesses with no website when true.
+require_website: true
+
+find_email: true
+find_phone: true
+find_pinterest: true
+
+# false = show the browser window (useful while testing/debugging).
+# true  = run without a visible window (normal VPS operation).
+headless: false
+
+# How many Google Maps listings to pull per keyword+location combination.
+max_results_per_query: 40
+
+output_file: output/leads.xlsx
+database_file: data/leads.db
+log_file: logs/app.log
